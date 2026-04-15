@@ -101,7 +101,10 @@ def _ref_device_and_dtype():
 def _to_ref(x, ref_device, ref_dtype):
     """Move a single value to the reference device / dtype."""
     if isinstance(x, torch.Tensor):
-        return x.detach().to(ref_device).to(ref_dtype)
+        if x.is_floating_point():
+            return x.detach().to(device=ref_device, dtype=ref_dtype)
+        else:
+            return x.detach().to(device=ref_device)
     return x
 
 

@@ -84,8 +84,9 @@ class ContrastiveLoss(nn.Module):
         # 构建正样本mask
         labels = labels.view(-1, 1)
         mask = torch.eq(labels, labels.t()).float()
-        # 计算损失（简化版）
-        exp_sim = torch.exp(similarity)
+        # 计算损失（简化版，使用 log-sum-exp 避免数值溢出）
+        max_sim = similarity.max(dim=1, keepdim=True)[0].detach()
+        exp_sim = torch.exp(similarity - max_sim)
         pos = exp_sim * mask
         neg = exp_sim * (1 - mask)
         loss = -torch.log(pos.sum(dim=1) / (pos.sum(dim=1) + neg.sum(dim=1) + 1e-10))

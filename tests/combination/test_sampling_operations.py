@@ -8,6 +8,8 @@ P2级测试：采样与随机操作组合测试
 - 数据增强pipeline
 """
 
+import math
+
 import pytest
 import torch
 import torch.nn as nn
@@ -52,7 +54,7 @@ class WeightInitializer:
     def xavier_init(shape):
         """Xavier初始化"""
         gain = nn.init.calculate_gain("relu")
-        std = gain * (2.0 / sum(shape))
+        std = gain * math.sqrt(2.0 / sum(shape))
         return torch.randn(shape, device=device) * std
 
     @staticmethod
