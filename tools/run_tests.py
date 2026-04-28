@@ -368,7 +368,7 @@ def parse_perf_log(op_dir):
     while line_no < len(lines):
         line = lines[line_no]
         if "deselected / 0 selected" in line:
-            record = {"status": "Unkown", "error": "No test case.", "data": {}}
+            record = {"status": "UNKNOWN", "error": "No test case.", "data": {}}
             return record
 
         if "FAILED" in line and "Operator" in line and "dtype" in line:
@@ -482,15 +482,16 @@ def run_benchmark(gpu_id, start, index, count):
         result_file = str(p)
         break
 
+    status = "No Result"
+    if code == TIMEOUT:
+        status = "TIMEOUT"
+
     # Not found
     if not result_file:
-        status = "No Result"
-        if code == TIMEOUT:
-            status = "TIMEOUT"
         return {
             "status": status,
             "duration": end - start,
-            "exit_code": TIMEOUT,
+            "exit_code": code,
             "log_file": str(output_file.relative_to(OUTPUT_DIR)),
             "result_file": None,
             "data": [],
@@ -580,7 +581,7 @@ def get_ops_to_test(ops_file, ops_list, stages):
     effective_stages = []
     for s in stages.split(","):
         stage = s.strip()
-        if stage not in ["alpha", "beta", "stable", "all"]:
+        if stage not in ["alpha", "beta", "stable", "all", "removed"]:
             pwarn(f"ignoring unsupported stage name '{s}'...")
             continue
         # Stop checking if 'all' specified
@@ -606,7 +607,7 @@ def get_ops_to_test(ops_file, ops_list, stages):
         # Always skip operators not exposed.
         if "exposed" in op and op["exposed"] is False:
             continue
-        ops.append(op["name"].lstrip("_"))
+        ops.append(op["id"].lstrip("_"))
 
     return ops
 
